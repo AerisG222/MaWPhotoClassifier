@@ -12,6 +12,8 @@ import uuid
 # https://github.com/ageitgey/face_recognition
 # https://www.pyimagesearch.com/2018/07/09/face-clustering-with-python/
 
+TEST = True
+IMAGE_SOURCE_ROOT_DIR_TEST = '/srv/www/website_assets/images/2018/aaron_and_alyssa'
 IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images'
 RESULT_DIR = '/home/mmorano/face_recognition'
 
@@ -61,7 +63,13 @@ def find_faces(path):
 
 def main():
     print('getting list of files...')
-    image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR + '/*/*/md/*.jpg')
+
+    if TEST:
+        image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR_TEST + '/md/*.jpg')
+    else:
+        image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR + '/*/*/md/*.jpg')
+
+    print('found ' + str(len(image_list)) + " images")
 
     print('processing files in parallel...')
     pool = Pool()
