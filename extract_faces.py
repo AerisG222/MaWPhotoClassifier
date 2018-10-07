@@ -3,6 +3,7 @@ import glob
 import face_recognition
 import multiprocessing
 import os
+import uuid
 
 
 image_source_root_dir = '/srv/www/website_assets/images'
@@ -15,10 +16,13 @@ def save_faces(path, image, face_locations):
     for i, face_location in enumerate(face_locations):
         top, right, bottom, left = face_location
 
-        dest_path = path.replace(image_source_root_dir, result_dir)
-        dest_path = dest_path.replace('md/', str(i) + "_")
+        # original code would preserve relative directory structures
+        # dest_path = path.replace(image_source_root_dir, result_dir)
+        # dest_path = dest_path.replace('md/', str(i) + "_")
 
-        print(dest_path)
+        # new code writes to a single directory w/ unique names, to simplify
+        # later clustering code
+        dest_path = os.path.join(result_dir, str(uuid.uuid4()) + ".jpg")
 
         face_dir = os.path.dirname(dest_path)
 
