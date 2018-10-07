@@ -17,19 +17,10 @@ IMAGE_SOURCE_ROOT_DIR_TEST = '/srv/www/website_assets/images/2018/aaron_and_alys
 IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images'
 RESULT_DIR = '/home/mmorano/face_recognition'
 
-data = []
-
 
 def save_faces(path, image, face_locations):
     for face_location in face_locations:
         top, right, bottom, left = face_location
-
-        # original code would preserve relative directory structures
-        # dest_path = path.replace(image_source_root_dir, result_dir)
-        # dest_path = dest_path.replace('md/', str(i) + "_")
-
-        # new code writes to a single directory w/ unique names, to simplify
-        # later clustering code
         dest_path = os.path.join(RESULT_DIR, str(uuid.uuid4()) + ".jpg")
 
         face_dir = os.path.dirname(dest_path)
@@ -52,13 +43,10 @@ def find_faces(path):
     face_locations = face_recognition.face_locations(image)
     face_encodings = face_recognition.face_encodings(image, face_locations)
 
-    save_faces(path, image, face_locations)
+    #save_faces(path, image, face_locations)
 
-    #if len(face_locations) > 0:
-    #    print(path)
-    #    d = [{"image_path": path, "loc": loc, "encoding": enc}
-    #        for (loc, enc) in zip(face_locations, face_encodings)]
-    #    data.extend(d)
+    return [{"image_path": path, "loc": loc, "encoding": enc}
+        for (loc, enc) in zip(face_locations, face_encodings)]
 
 
 def main():
@@ -73,7 +61,9 @@ def main():
 
     print('processing files in parallel...')
     pool = Pool()
-    pool.map(find_faces, image_list)
+    data = pool.map(find_faces, image_list)
+
+    print(data)
 
 
 main()
