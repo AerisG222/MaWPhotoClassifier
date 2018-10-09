@@ -40,3 +40,7 @@ A utility to try and automatically identify people in photos.  Details below are
 ## Install face_recognition
 
 - `pip3 install face_recognition --user`
+
+## Install SciKitLearn
+
+- `pip3 install scikit-learn --user`
