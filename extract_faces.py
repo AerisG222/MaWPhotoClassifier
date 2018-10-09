@@ -1,8 +1,10 @@
 from PIL import Image
 from multiprocessing import Pool
+from sklearn.cluster import DBSCAN
 import glob
 import face_recognition
 import multiprocessing
+import numpy
 import os
 import uuid
 
@@ -49,6 +51,20 @@ def find_faces(path):
         for (loc, enc) in zip(face_locations, face_encodings)]
 
 
+def cluster(data):
+    encodings = [d["encoding"] for d in data]
+
+    # cluster the embeddings
+    print("[INFO] clustering...")
+    clt = DBSCAN(metric="euclidean", n_jobs=-1)
+    clt.fit(encodings)
+
+    # determine the total number of unique faces found in the dataset
+    labelIDs = numpy.unique(clt.labels_)
+    numUniqueFaces = len(numpy.where(labelIDs > -1)[0])
+    print("[INFO] # unique faces: {}".format(numUniqueFaces))
+
+
 def main():
     print('getting list of files...')
 
@@ -63,7 +79,15 @@ def main():
     pool = Pool()
     data = pool.map(find_faces, image_list)
 
-    print(data)
+    # flatten the list
+    # https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python?page=1&tab=votes#tab-top
+    data = [item for sublist in data for item in sublist]
+
+    # remove any instances where faces were not found
+    data = [x for x in data if len(x) > 0]
+
+    #print(data)
+    cluster(data)
 
 
 main()
