@@ -20,19 +20,18 @@ IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images'
 RESULT_DIR = '/home/mmorano/face_recognition'
 
 
-def save_faces(path, image, face_locations):
-    for face_location in face_locations:
-        top, right, bottom, left = face_location
-        dest_path = os.path.join(RESULT_DIR, str(uuid.uuid4()) + ".jpg")
+def save_face(src_path, dest_dir, face_location):
+    top, right, bottom, left = face_location
+    dest_path = os.path.join(dest_dir, str(uuid.uuid4()) + ".jpg")
 
-        face_dir = os.path.dirname(dest_path)
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
 
-        if not os.path.exists(face_dir):
-            os.makedirs(face_dir)
+    image = face_recognition.load_image_file(src_path)
 
-        face_image = image[top:bottom, left:right]
-        pil_image = Image.fromarray(face_image)
-        pil_image.save(dest_path)
+    face_image = image[top:bottom, left:right]
+    pil_image = Image.fromarray(face_image)
+    pil_image.save(dest_path)
 
 
 def find_faces(path):
@@ -60,9 +59,20 @@ def cluster(data):
     clt.fit(encodings)
 
     # determine the total number of unique faces found in the dataset
+    # label of -1 below could suggest outliers, for now, exclude these
     labelIDs = numpy.unique(clt.labels_)
     numUniqueFaces = len(numpy.where(labelIDs > -1)[0])
     print("[INFO] # unique faces: {}".format(numUniqueFaces))
+
+    # loop over the unique face integers
+    for labelID in labelIDs:
+        print("[INFO] faces for face ID: {}".format(labelID))
+        face_dir = os.path.join(RESULT_DIR, "face_" + str(labelID))
+
+        idxs = numpy.where(clt.labels_ == labelID)[0]
+
+        for i in idxs:
+            save_face(data[i]["image_path"], face_dir, data[i]["loc"])
 
 
 def main():
