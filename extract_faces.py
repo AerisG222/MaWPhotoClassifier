@@ -1,5 +1,5 @@
 from PIL import Image
-from multiprocessing import Pool
+from multiprocessing import Pool, Value
 from sklearn.cluster import DBSCAN
 import glob
 import face_recognition
@@ -14,10 +14,21 @@ import uuid
 # https://github.com/ageitgey/face_recognition
 # https://www.pyimagesearch.com/2018/07/09/face-clustering-with-python/
 
-TEST = True
+TEST = False
 IMAGE_SOURCE_ROOT_DIR_TEST = '/srv/www/website_assets/images/2018/aaron_and_alyssa'
-IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images'
+IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images/2018'
 RESULT_DIR = '/home/mmorano/face_recognition'
+
+counter = None
+total_count = None
+
+
+def progressBar(title, value, endvalue, bar_length=40):
+        percent = float(value) / endvalue
+        arrow = '-' * int(round(percent * bar_length)-1) + '>'
+        spaces = ' ' * (bar_length - len(arrow))
+
+        print("{0} Percent: [{1}] {2}%".format(title, arrow + spaces, int(round(percent * 100))), end="\r")
 
 
 def save_face(src_path, dest_dir, face_location):
@@ -35,6 +46,13 @@ def save_face(src_path, dest_dir, face_location):
 
 
 def find_faces(path):
+    global counter
+    global total_count
+
+    with counter.get_lock():
+        counter.value += 1
+        progressBar("Find Faces", counter.value, total_count.value)
+
     # Load the jpg file into a numpy array
     image = face_recognition.load_image_file(path)
 
@@ -76,14 +94,32 @@ def cluster(data):
 
 
 def main():
+    global counter
+    global total_count
+
     print('getting list of files...')
 
     if TEST:
         image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR_TEST + '/md/*.jpg')
     else:
-        image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR + '/*/*/md/*.jpg')
+        image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR + '/*/md/*.jpg')
 
-    print('found ' + str(len(image_list)) + " images")
+    counter = Value('i', 0)
+    total_count = Value('i', len(image_list))
+
+    print('found {} images'.format(total_count))
+
+    img_list = []
+
+    # build list of arrays, so we can pass more info to the job that runs in
+    # parallel to better illustrate where we are in the overall process
+    for i, img in enumerate(image_list):
+        plist = []
+        plist.append(img)
+        plist.append(i)
+        plist.append(len(image_list))
+
+        img_list.append(plist)
 
     print('processing files in parallel...')
     pool = Pool()
@@ -97,6 +133,7 @@ def main():
     data = [x for x in data if len(x) > 0]
 
     #print(data)
+    print('clustering faces...')
     cluster(data)
 
 
