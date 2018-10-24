@@ -44,3 +44,13 @@ A utility to try and automatically identify people in photos.  Details below are
 ## Install SciKitLearn
 
 - `pip3 install scikit-learn --user`
+
+
+## Install nvidia-docker2
+- https://github.com/NVIDIA/nvidia-docker
+- docker build .
+- docker run --runtime-nvidia --rm ???
+
+## Pytorch
+- `conda install pytorch torchvision cuda92 -c pytorch`
+- `python3 pytorch_test.py`
