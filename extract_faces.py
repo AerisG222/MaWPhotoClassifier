@@ -59,7 +59,7 @@ def find_faces(path):
     # Find all the faces in the image using the default HOG-based model.
     # This method is fairly accurate, but not as accurate as the CNN model and not GPU accelerated.
     # See also: find_faces_in_picture_cnn.py
-    face_locations = face_recognition.face_locations(image)
+    face_locations = face_recognition.face_locations(image, number_of_times_to_upsample=0, model="cnn")
     face_encodings = face_recognition.face_encodings(image, face_locations)
 
     #save_faces(path, image, face_locations)
@@ -122,7 +122,7 @@ def main():
         img_list.append(plist)
 
     print('processing files in parallel...')
-    pool = Pool()
+    pool = Pool(processes=4)
     data = pool.map(find_faces, image_list)
 
     # flatten the list
