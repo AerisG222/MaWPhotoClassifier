@@ -2,8 +2,34 @@
 
 FROM nvidia/cuda:9.0-base
 
-RUN apt-get update && \
-    apt-get -y install python3 python3-pip
+RUN apt-get -y update
+RUN apt-get install -y --fix-missing \
+    build-essential \
+    cmake \
+    gfortran \
+    git \
+    wget \
+    curl \
+    graphicsmagick \
+    libgraphicsmagick1-dev \
+    libatlas-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libgtk2.0-dev \
+    libjpeg-dev \
+    liblapack-dev \
+    libswscale-dev \
+    pkg-config \
+    python3-dev \
+    python3-h5py \
+    python3-matplotlib \
+    python3-numpy \
+    python3-opencv \
+    python3-pydot \
+    python3-scipy \
+    software-properties-common \
+    zip \
+    && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
 RUN mkdir /test
 

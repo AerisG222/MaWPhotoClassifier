@@ -11,7 +11,22 @@ A utility to try and automatically identify people in photos.  Details below are
 
 ## Install Tensorflow Python library
 
-- `sudo dnf install cmake python3-devel python3-tkinter python3-dlib boost-devel lapack-devel openblas-devel pylint`
+```
+sudo dnf install boost-devel \
+                 cmake \
+                 graphviz \
+                 lapack-devel \
+                 openblas-devel \
+                 pylint \
+                 python3-devel \
+                 python3-dlib \
+                 python3-h5py \
+                 python3-matplotlib \
+                 python3-opencv \
+                 python3-pydot \
+                 python3-scipy \
+                 python3-tkinter
+```
 - `pip3 install tensorflow --user`
 - `pip3 install matplotlib --user`
 
