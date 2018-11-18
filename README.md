@@ -14,6 +14,7 @@ A utility to try and automatically identify people in photos.  Details below are
 ```
 sudo dnf install boost-devel \
                  cmake \
+                 gcc-c++ \
                  graphviz \
                  lapack-devel \
                  openblas-devel \
@@ -28,7 +29,6 @@ sudo dnf install boost-devel \
                  python3-tkinter
 ```
 - `pip3 install tensorflow --user`
-- `pip3 install matplotlib --user`
 
 ## References
 
@@ -47,25 +47,11 @@ sudo dnf install boost-devel \
 
 - https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html
 
-## Build DLIB (might not be required)
-
-- `sudo dnf install python3-devel openblas-devel lapack-devel`
-- `git clone https://github.com/davisking/dlib.git`
-
 ## Install face_recognition
 
 - `pip3 install face_recognition --user`
-
-## Install SciKitLearn
-
-- `pip3 install scikit-learn --user`
-
 
 ## Install nvidia-docker2
 - https://github.com/NVIDIA/nvidia-docker
 - docker build .
 - docker run --runtime-nvidia --rm ???
-
-## Pytorch
-- `conda install pytorch torchvision cuda92 -c pytorch`
-- `python3 pytorch_test.py`
