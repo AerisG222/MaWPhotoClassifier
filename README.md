@@ -51,6 +51,10 @@ sudo dnf install boost-devel \
 
 - `pip3 install face_recognition --user`
 
+## Install mtcnn
+
+- `pip3 install mtcnn --user`
+
 ## Install nvidia-docker2
 - https://github.com/NVIDIA/nvidia-docker
 - docker build .
