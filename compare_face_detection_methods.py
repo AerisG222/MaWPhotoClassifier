@@ -1,4 +1,5 @@
 import datetime
+import numpy
 import os
 import cv2
 import face_recognition
@@ -57,9 +58,9 @@ def run_opencv_detector(name, classifier):
     show_matches(name, faces)
 
 
-def run_opencv_dnn_detector():
+def run_opencv_dnn_detector(min_confidence):
     # prep detector
-    name = 'opencv-dnn'
+    name = 'opencv-dnn- ' + str(min_confidence * 100) + '% confidence'
     prototxt = os.path.join(opencv_dnn_dir, 'deploy.prototxt')
     model = os.path.join(opencv_dnn_dir, 'res10_300x300_ssd_iter_140000_fp16.caffemodel')
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
@@ -80,14 +81,14 @@ def run_opencv_dnn_detector():
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
 
-        if(confidence > 0.5):
-            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+        if(confidence >= min_confidence):
+            box = detections[0, 0, i, 3:7] * numpy.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
-            faces.push((startX, startY, endX - startX, endY - startY))
+            faces_for_show.append((startX, startY, endX - startX, endY - startY))
 
     # summarize
-    print_summary(name, len(faces), start_time, end_time)
-    show_matches(name, faces)
+    print_summary(name, len(faces_for_show), start_time, end_time)
+    show_matches(name, faces_for_show)
 
 
 def run_face_recognition_detector(model):
@@ -143,7 +144,11 @@ def main():
     run_opencv_detector('Lbp default',   'lbpcascades/lbpcascade_frontalface.xml')
     run_opencv_detector('Lbp improved',  'lbpcascades/lbpcascade_frontalface_improved.xml')
 
-    # run_opencv_dnn_detector()
+    run_opencv_dnn_detector(0.10)
+    run_opencv_dnn_detector(0.30)
+    run_opencv_dnn_detector(0.50)
+    run_opencv_dnn_detector(0.70)
+    run_opencv_dnn_detector(0.90)
 
     run_face_recognition_detector('hog')
     run_face_recognition_detector('cnn')
