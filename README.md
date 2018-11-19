@@ -59,3 +59,16 @@ sudo dnf install boost-devel \
 - https://github.com/NVIDIA/nvidia-docker
 - docker build .
 - docker run --runtime-nvidia --rm ???
+
+## Build latest opencv
+  - install dependencies
+    - `sudo dnf install gtk2-devel libdc1394-devel libv4l-devel ffmpeg-devel gstreamer-plugins-base-devel libpng-devel libjpeg-turbo-devel jasper-devel openexr-devel libtiff-devel libwebp-devel tbb-devel eigen3-devel`
+  - clone git repo
+  - cd opencv
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - sudo make install
+  - vi ~/.bashrc
+    - export PYTHONPATH=/usr/local/python/cv2/python-3.7/:$PYTHONPATH
