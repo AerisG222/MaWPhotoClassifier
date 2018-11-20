@@ -16,22 +16,33 @@ import texttable
 # https://www.pyimagesearch.com/2017/09/18/real-time-object-detection-with-deep-learning-and-opencv/
 opencv_data_dir = '/home/mmorano/git/opencv/data'
 opencv_dnn_dir = '/home/mmorano/git/opencv/samples/dnn/face_detector'
-photo = '/srv/www/website_assets/images/2018/hotpot/md/MVIMG_20180330_193247.jpg'
-refimg = cv2.imread(photo)
-result_summaries = [("Detector", "Faces Found", "Duration (s)")]
+photos = [
+    '/srv/www/website_assets/images/2017/alyssas_birthday/md/DSC_1646.jpg',
+    '/srv/www/website_assets/images/2018/hotpot/md/MVIMG_20180330_193247.jpg',
+    '/srv/www/website_assets/images/2012/alyssas_birthday/md/DSC_2777.jpg',
+    '/srv/www/website_assets/images/2006/boston_marathon/md/dsc_1221.jpg'
+]
+result_summaries = []
 result_images = []
 result_images_per_row = 4
 
 
-def show_results():
-    print_summary()
+def show_results(photo):
+    print_summary(photo)
     show_comparison()
 
 
-def print_summary():
+def print_summary(photo):
+    print()
+    print()
+    print("****")
+    print(os.path.basename(photo))
+    print("****")
+    print()
     t = texttable.Texttable()
     t.add_rows(result_summaries)
     print(t.draw())
+    print()
 
 
 def print_status(name):
@@ -77,8 +88,8 @@ def add_summary(name, face_count, start_time, end_time):
     result_summaries.append( (name, face_count, (end_time - start_time).total_seconds()) )
 
 
-def add_matches_visual(name, faces):
-    demo_img = refimg.copy()
+def add_matches_visual(photo, name, faces):
+    demo_img = cv2.imread(photo)
 
     cv2.putText(demo_img, name, (30,30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv2.LINE_AA)
 
@@ -88,7 +99,7 @@ def add_matches_visual(name, faces):
     result_images.append(demo_img)
 
 
-def run_opencv_detector(name, classifier):
+def run_opencv_detector(photo, name, classifier):
     name = 'opencv-' + name
     print_status(name)
 
@@ -107,10 +118,10 @@ def run_opencv_detector(name, classifier):
 
     # summarize
     add_summary(name, len(faces), start_time, end_time)
-    add_matches_visual(name, faces)
+    add_matches_visual(photo, name, faces)
 
 
-def run_opencv_dnn_detector(min_confidence):
+def run_opencv_dnn_detector(photo, min_confidence):
     name = 'opencv-dnn- ' + str(min_confidence * 100) + '% confidence'
     print_status(name)
 
@@ -142,10 +153,10 @@ def run_opencv_dnn_detector(min_confidence):
 
     # summarize
     add_summary(name, len(faces_for_show), start_time, end_time)
-    add_matches_visual(name, faces_for_show)
+    add_matches_visual(photo, name, faces_for_show)
 
 
-def run_face_recognition_detector(model):
+def run_face_recognition_detector(photo, model):
     name = 'face_recognition-' + model
     print_status(name)
 
@@ -167,10 +178,10 @@ def run_face_recognition_detector(model):
 
     # summarize
     add_summary(name, len(faces), start_time, end_time)
-    add_matches_visual(name, faces_for_show)
+    add_matches_visual(photo, name, faces_for_show)
 
 
-def run_mtcnn_detector():
+def run_mtcnn_detector(photo):
     name = 'mtcnn'
     print_status(name)
 
@@ -188,7 +199,7 @@ def run_mtcnn_detector():
 
     # summarize
     add_summary(name, len(faces), start_time, end_time)
-    add_matches_visual(name, faces)
+    add_matches_visual(photo, name, faces)
 
 
 def main():
@@ -197,25 +208,30 @@ def main():
     #print("mtcnn version: {0}".format(mtcnn.__version__))
     print()
 
-    run_opencv_detector('Haar default',  'haarcascades/haarcascade_frontalface_default.xml')
-    run_opencv_detector('Haar alt',      'haarcascades/haarcascade_frontalface_alt.xml')
-    run_opencv_detector('Haar alt2',     'haarcascades/haarcascade_frontalface_alt2.xml')
-    run_opencv_detector('Haar alt tree', 'haarcascades/haarcascade_frontalface_alt_tree.xml')
-    run_opencv_detector('Lbp default',   'lbpcascades/lbpcascade_frontalface.xml')
-    run_opencv_detector('Lbp improved',  'lbpcascades/lbpcascade_frontalface_improved.xml')
+    for photo in photos:
+        result_images.clear()
+        result_summaries.clear()
+        result_summaries.append(("Detector", "Faces Found", "Duration (s)"))
 
-    run_opencv_dnn_detector(0.10)
-    run_opencv_dnn_detector(0.30)
-    run_opencv_dnn_detector(0.50)
-    run_opencv_dnn_detector(0.70)
-    run_opencv_dnn_detector(0.90)
+        run_opencv_detector(photo, 'Haar default',  'haarcascades/haarcascade_frontalface_default.xml')
+        run_opencv_detector(photo, 'Haar alt',      'haarcascades/haarcascade_frontalface_alt.xml')
+        run_opencv_detector(photo, 'Haar alt2',     'haarcascades/haarcascade_frontalface_alt2.xml')
+        run_opencv_detector(photo, 'Haar alt tree', 'haarcascades/haarcascade_frontalface_alt_tree.xml')
+        run_opencv_detector(photo, 'Lbp default',   'lbpcascades/lbpcascade_frontalface.xml')
+        run_opencv_detector(photo, 'Lbp improved',  'lbpcascades/lbpcascade_frontalface_improved.xml')
 
-    run_face_recognition_detector('hog')
-    run_face_recognition_detector('cnn')
+        run_opencv_dnn_detector(photo, 0.10)
+        run_opencv_dnn_detector(photo, 0.30)
+        run_opencv_dnn_detector(photo, 0.50)
+        run_opencv_dnn_detector(photo, 0.70)
+        run_opencv_dnn_detector(photo, 0.90)
 
-    # run_mtcnn_detector()
+        run_face_recognition_detector(photo, 'hog')
+        run_face_recognition_detector(photo, 'cnn')
 
-    show_results()
+        # run_mtcnn_detector(photo)
+
+        show_results(photo)
 
 
 main()
