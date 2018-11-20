@@ -10,6 +10,7 @@ A utility to try and automatically identify people in photos.  Details below are
 - `docker pull tensorflow/tensorflow`
 
 ## Install Tensorflow Python library
+- we install both python2 and python3 libraries as currently tensorflow is not supported on python3.7 [which is what is on Fedora 29, so we will try python2 for now]
 
 ```
 sudo dnf install boost-devel \
@@ -19,16 +20,25 @@ sudo dnf install boost-devel \
                  lapack-devel \
                  openblas-devel \
                  pylint \
+                 python2-devel \
                  python3-devel \
+                 python2-dlib \
                  python3-dlib \
+                 python2-h5py \
                  python3-h5py \
+                 python2-matplotlib \
                  python3-matplotlib \
+                 python2-opencv \
                  python3-opencv \
+                 python2-pydot \
                  python3-pydot \
+                 python2-scipy \
                  python3-scipy \
+                 python2-tkinter \
                  python3-tkinter
 ```
-- `pip3 install tensorflow --user`
+
+- `pip install tensorflow --user`
 
 ## References
 
@@ -49,10 +59,13 @@ sudo dnf install boost-devel \
 
 ## Install face_recognition
 
+- `pip install face_recognition --user`
 - `pip3 install face_recognition --user`
 
 ## Install mtcnn
 
+- oh no, mtcnn requires python3 so the first does not work =(
+- `pip install mtcnn --user`
 - `pip3 install mtcnn --user`
 
 ## Install nvidia-docker2
