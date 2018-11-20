@@ -3,6 +3,7 @@ import numpy
 import os
 import cv2
 import face_recognition
+import texttable
 #from mtcnn.mtcnn import MTCNN
 
 
@@ -17,30 +18,81 @@ opencv_data_dir = '/home/mmorano/git/opencv/data'
 opencv_dnn_dir = '/home/mmorano/git/opencv/samples/dnn/face_detector'
 photo = '/srv/www/website_assets/images/2018/hotpot/md/MVIMG_20180330_193247.jpg'
 refimg = cv2.imread(photo)
+result_summaries = [("Detector", "Faces Found", "Duration (s)")]
+result_images = []
+result_images_per_row = 4
 
 
-def print_summary(name, face_count, start_time, end_time):
-    print('-----------------------------------------------------------')
-    print('detector name: ' + name)
-    print('faces found: ' + str(face_count))
-    print('time taken: ' + str((end_time - start_time).total_seconds()))
-    print()
+def show_results():
+    print_summary()
+    show_comparison()
 
 
-def show_matches(name, faces):
-    demo_img = refimg.copy()
+def print_summary():
+    t = texttable.Texttable()
+    t.add_rows(result_summaries)
+    print(t.draw())
 
-    for (x, y, w, h) in faces:
-        cv2.rectangle(demo_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-    cv2.imshow(name, demo_img)
+def print_status(name):
+    print('processing ' + name + '...')
+
+
+def scale_image(img):
+    return cv2.resize(img, None, fx=0.4, fy=0.4)
+
+
+def show_comparison():
+    for idx, img in enumerate(result_images):
+        result_images[idx] = scale_image(img)
+
+    # break array of images into array of arrays of images [to produce grid of result images]
+    rows = [result_images[i : i + result_images_per_row] for i in range(0, len(result_images), result_images_per_row)]
+
+    # fill the last row with black images if needed (required by vstack)
+    if len(rows) > 1:
+        first_img = rows[0][0]
+        len_first_row = len(rows[0])
+        blank = numpy.zeros(first_img.shape, numpy.uint8)
+        blank[:] = ( 32, 32, 32)
+
+        while len(rows[-1]) < len_first_row:
+            rows[-1].append(blank)
+
+    result_rows = []
+
+    # horizontally stack multiple images for each row, yielding one image per row
+    for row in rows:
+        result_rows.append(numpy.hstack(row))
+
+    # vertically stack the rows to finish the image grid
+    result_img = numpy.vstack(result_rows)
+
+    cv2.imshow('Results', result_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
+def add_summary(name, face_count, start_time, end_time):
+    result_summaries.append( (name, face_count, (end_time - start_time).total_seconds()) )
+
+
+def add_matches_visual(name, faces):
+    demo_img = refimg.copy()
+
+    cv2.putText(demo_img, name, (30,30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv2.LINE_AA)
+
+    for (x, y, w, h) in faces:
+        cv2.rectangle(demo_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+    result_images.append(demo_img)
+
+
 def run_opencv_detector(name, classifier):
-    # prep detector
     name = 'opencv-' + name
+    print_status(name)
+
+    # prep detector
     classifier = os.path.join(opencv_data_dir, classifier)
     cv_classifier = cv2.CascadeClassifier(classifier)
 
@@ -54,13 +106,15 @@ def run_opencv_detector(name, classifier):
     end_time = datetime.datetime.now()
 
     # summarize
-    print_summary(name, len(faces), start_time, end_time)
-    show_matches(name, faces)
+    add_summary(name, len(faces), start_time, end_time)
+    add_matches_visual(name, faces)
 
 
 def run_opencv_dnn_detector(min_confidence):
-    # prep detector
     name = 'opencv-dnn- ' + str(min_confidence * 100) + '% confidence'
+    print_status(name)
+
+    # prep detector
     prototxt = os.path.join(opencv_dnn_dir, 'deploy.prototxt')
     model = os.path.join(opencv_dnn_dir, 'res10_300x300_ssd_iter_140000_fp16.caffemodel')
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
@@ -87,13 +141,15 @@ def run_opencv_dnn_detector(min_confidence):
             faces_for_show.append((startX, startY, endX - startX, endY - startY))
 
     # summarize
-    print_summary(name, len(faces_for_show), start_time, end_time)
-    show_matches(name, faces_for_show)
+    add_summary(name, len(faces_for_show), start_time, end_time)
+    add_matches_visual(name, faces_for_show)
 
 
 def run_face_recognition_detector(model):
-    # prep detector
     name = 'face_recognition-' + model
+    print_status(name)
+
+    # prep detector
 
     # prep image
     image = face_recognition.load_image_file(photo)
@@ -110,14 +166,17 @@ def run_face_recognition_detector(model):
         faces_for_show.append((left, bottom, right - left, top - bottom))
 
     # summarize
-    print_summary(name, len(faces), start_time, end_time)
-    show_matches(name, faces_for_show)
+    add_summary(name, len(faces), start_time, end_time)
+    add_matches_visual(name, faces_for_show)
 
 
 def run_mtcnn_detector():
-    # prep detector
     name = 'mtcnn'
+    print_status(name)
+
+    # prep detector
     detector = MTCNN()
+    print_status(name)
 
     # prep image
     img = cv2.imread(photo)
@@ -128,13 +187,14 @@ def run_mtcnn_detector():
     end_time = datetime.datetime.now()
 
     # summarize
-    print_summary(name, len(faces), start_time, end_time)
-    show_matches(name, faces)
+    add_summary(name, len(faces), start_time, end_time)
+    add_matches_visual(name, faces)
 
 
 def main():
     print("OpenCV version :  {0}".format(cv2.__version__))
     print("face_recognition version: {0}".format(face_recognition.__version__))
+    #print("mtcnn version: {0}".format(mtcnn.__version__))
     print()
 
     run_opencv_detector('Haar default',  'haarcascades/haarcascade_frontalface_default.xml')
@@ -154,6 +214,8 @@ def main():
     run_face_recognition_detector('cnn')
 
     # run_mtcnn_detector()
+
+    show_results()
 
 
 main()
