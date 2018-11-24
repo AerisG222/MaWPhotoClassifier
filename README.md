@@ -10,6 +10,7 @@ A utility to try and automatically identify people in photos.  Details below are
 - `docker pull tensorflow/tensorflow`
 
 ## Install Tensorflow Python library
+
 - we install both python2 and python3 libraries as currently tensorflow is not supported on python3.7 [which is what is on Fedora 29, so we will try python2 for now]
 
 ```
@@ -69,11 +70,13 @@ sudo dnf install boost-devel \
 - `pip3 install mtcnn --user`
 
 ## Install nvidia-docker2
+
 - https://github.com/NVIDIA/nvidia-docker
 - docker build .
 - docker run --runtime-nvidia --rm ???
 
 ## Build latest opencv
+
   - install dependencies
     - `sudo dnf install gtk2-devel libdc1394-devel libv4l-devel ffmpeg-devel gstreamer-plugins-base-devel libpng-devel libjpeg-turbo-devel jasper-devel openexr-devel libtiff-devel libwebp-devel tbb-devel eigen3-devel`
   - clone git repo
@@ -85,3 +88,21 @@ sudo dnf install boost-devel \
   - sudo make install
   - vi ~/.bashrc
     - export PYTHONPATH=/usr/local/python/cv2/python-3.7/:$PYTHONPATH
+
+
+## Approach
+
+There are a few discrete steps that will be used in the current implementation:
+
+1. Test various face detection techniques for accuracy and performance, and decide on one approach to use for processing image dataset  (compare_face_detection_methods.py)
+2. Run script to detect and extract faces and metadata from source images
+3. Run script to cluster faces into directories to try and automate labelling process
+4. Manually review and label directories which can be used to train face recognition
+5. Create a trained model (ideally which is based on an existing model)
+6. Run script to output metadata about recognized faces in all images
+
+Hopefully after all steps are performed, useful data can then be used to allow for searching and filtering the images on mikeandwan.us.
+
+## Decisions
+
+1. For the first attempt, we will use the 'opencv-dnn 30% confidence' detector, as it did a good job detecting faces, and was also one of the quickest.
