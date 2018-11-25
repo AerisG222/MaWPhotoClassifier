@@ -69,6 +69,10 @@ sudo dnf install boost-devel \
 - `pip install mtcnn --user`
 - `pip3 install mtcnn --user`
 
+## Install scikit-learn
+
+- `pip3 install scikit-learn --user`
+
 ## Install nvidia-docker2
 
 - https://github.com/NVIDIA/nvidia-docker
