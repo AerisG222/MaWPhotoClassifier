@@ -16,7 +16,7 @@ import uuid
 OPENCV_DNN_DIR = '/home/mmorano/git/opencv/samples/dnn/face_detector'
 OPENCV_DNN_PROTOTXT = os.path.join(OPENCV_DNN_DIR, 'deploy.prototxt')
 OPENCV_DNN_MODEL = os.path.join(OPENCV_DNN_DIR, 'res10_300x300_ssd_iter_140000_fp16.caffemodel')
-MIN_CONFIDENCE = 0.30
+MIN_CONFIDENCE = 0.50
 
 TEST = False
 IMAGE_SOURCE_ROOT_DIR_TEST = '/srv/www/website_assets/images/2018/aaron_and_alyssa'
