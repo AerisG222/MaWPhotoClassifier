@@ -73,6 +73,10 @@ sudo dnf install boost-devel \
 
 - `pip3 install scikit-learn --user`
 
+## Install psutil
+
+- `pip3 install psutil --user`
+
 ## Install nvidia-docker2
 
 - https://github.com/NVIDIA/nvidia-docker
