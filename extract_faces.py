@@ -18,7 +18,7 @@ OPENCV_DNN_PROTOTXT = os.path.join(OPENCV_DNN_DIR, 'deploy.prototxt')
 OPENCV_DNN_MODEL = os.path.join(OPENCV_DNN_DIR, 'res10_300x300_ssd_iter_140000_fp16.caffemodel')
 MIN_CONFIDENCE = 0.50
 
-TEST = False
+TEST = True
 IMAGE_SOURCE_ROOT_DIR_TEST = '/srv/www/website_assets/images/2018/aaron_and_alyssa'
 IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images/2018'
 RESULT_DIR = '/home/mmorano/extracted_faces'
@@ -81,6 +81,27 @@ def get_image_list():
     return image_list
 
 
+def make_square(img, startX, startY, endX, endY):
+    w = endX - startX
+    h = endY - startY
+
+    if w == h:
+        return (startX, startY, endX, endY)
+
+    (maxH, maxW) = img.shape[:2]
+
+    if w < h:
+       left_pad = ((h - w) / 2 ).astype("int")
+       right_pad = h - w - left_pad
+
+       return (startX - left_pad, startY, endX + right_pad, endY)
+
+    top_pad = ((w - h) / 2).astype("int")
+    bottom_pad = w - h - top_pad
+
+    return (startX, startY - top_pad, endX, endY + bottom_pad)
+
+
 def extract_faces(photo_path):
     increment_image_count()
 
@@ -122,6 +143,9 @@ def save_face(img, startX, startY, endX, endY):
 
     if not os.path.exists(RESULT_DIR):
         os.makedirs(RESULT_DIR)
+
+    # recognition will require squares, so only save out square images (to be resized as needed during training)
+    (startX, startY, endX, endY) = make_square(img, startX, startY, endX, endY)
 
     face_image = img[startY:endY, startX:endX]
     cv2.imwrite(face_dest_path, face_image)
