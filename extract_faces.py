@@ -56,7 +56,12 @@ def increment_image_count():
 
 
 def print_timing(title, start_time, end_time):
+    print("\n")
     print(title + str((end_time - start_time).total_seconds()) + " seconds")
+
+
+def get_lg_path(file):
+    return file.replace("/md/", "/lg/")
 
 
 def get_image_list():
@@ -84,6 +89,8 @@ def extract_faces(photo_path):
 
     # prep image
     img = cv2.imread(photo_path)
+    lgimg = []
+    detected_faces = 0
     (h, w) = img.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
 
@@ -91,17 +98,20 @@ def extract_faces(photo_path):
     net.setInput(blob)
     detections = net.forward()
 
-    detected_faces = 0
-
     # scan results to extract faces
-    faces_for_show = []
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
 
         if(confidence >= MIN_CONFIDENCE):
-            box = detections[0, 0, i, 3:7] * numpy.array([w, h, w, h])
+            if len(lgimg) == 0:
+                lgimg = cv2.imread(get_lg_path(photo_path))
+                (lh, lw) = lgimg.shape[:2]
+                xratio = lw / w
+                yratio = lh / h
+
+            box = detections[0, 0, i, 3:7] * numpy.array([w * xratio, h * yratio, w * xratio, h * yratio])
             (startX, startY, endX, endY) = box.astype("int")
-            save_face(img, startX, startY, endX, endY)
+            save_face(lgimg, startX, startY, endX, endY)
             detected_faces += 1
 
     increment_face_count(detected_faces)
