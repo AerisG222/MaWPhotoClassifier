@@ -18,9 +18,9 @@ OPENCV_DNN_PROTOTXT = os.path.join(OPENCV_DNN_DIR, 'deploy.prototxt')
 OPENCV_DNN_MODEL = os.path.join(OPENCV_DNN_DIR, 'res10_300x300_ssd_iter_140000_fp16.caffemodel')
 MIN_CONFIDENCE = 0.50
 
-TEST = True
+TEST = False
 IMAGE_SOURCE_ROOT_DIR_TEST = '/srv/www/website_assets/images/2018/aaron_and_alyssa'
-IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images/2018'
+IMAGE_SOURCE_ROOT_DIR = '/srv/www/website_assets/images'
 RESULT_DIR = '/home/mmorano/extracted_faces'
 
 face_count = mp.Value('i', 0)
@@ -72,7 +72,7 @@ def get_image_list():
     if TEST:
         image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR_TEST + '/md/*.jpg')
     else:
-        image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR + '/*/md/*.jpg')
+        image_list = glob.glob(IMAGE_SOURCE_ROOT_DIR + '/*/*/md/*.jpg')
 
     end_time = datetime.datetime.now()
 
@@ -125,21 +125,23 @@ def extract_faces(photo_path):
 
         if(confidence >= MIN_CONFIDENCE):
             if len(lgimg) == 0:
-                lgimg = cv2.imread(get_lg_path(photo_path))
+                lgpath = get_lg_path(photo_path)
+                lgimg = cv2.imread(lgpath)
                 (lh, lw) = lgimg.shape[:2]
                 xratio = lw / w
                 yratio = lh / h
 
             box = detections[0, 0, i, 3:7] * numpy.array([w * xratio, h * yratio, w * xratio, h * yratio])
             (startX, startY, endX, endY) = box.astype("int")
-            save_face(lgimg, startX, startY, endX, endY)
+            save_face(lgpath, lgimg, startX, startY, endX, endY)
             detected_faces += 1
 
     increment_face_count(detected_faces)
 
 
-def save_face(img, startX, startY, endX, endY):
+def save_face(photo_path, img, startX, startY, endX, endY):
     face_dest_path = os.path.join(RESULT_DIR, str(uuid.uuid4()) + ".jpg")
+    face_ref_path = face_dest_path + ".txt"
 
     if not os.path.exists(RESULT_DIR):
         os.makedirs(RESULT_DIR)
@@ -149,6 +151,9 @@ def save_face(img, startX, startY, endX, endY):
 
     face_image = img[startY:endY, startX:endX]
     cv2.imwrite(face_dest_path, face_image)
+
+    with open(face_ref_path, "w") as file:
+        file.write(photo_path)
 
 
 def main():
